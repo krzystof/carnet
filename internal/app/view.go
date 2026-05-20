@@ -22,10 +22,10 @@ func (m Model) View() tea.View {
 		v.SetContent(WizardView(m))
 
 	case stateLoadPage:
-		v.SetContent("load page")
+		v.SetContent("...")
 
 	case stateReady:
-		v.SetContent("ready")
+		v.SetContent(m.page)
 
 	case stateError:
 		v.SetContent("Fatal config path error:\n\n" + m.err.Error() + "\n\nPress q to quit")

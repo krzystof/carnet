@@ -12,10 +12,3 @@ func FromJSON(data []byte) (Config, error) {
 	err := json.Unmarshal(data, &cfg)
 	return cfg, err
 }
-
-func LoadConfig() (Config, error) {
-	// read from fs
-	// if no config, return new config
-	// if config, return it
-	return Config{}, nil
-}

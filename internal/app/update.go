@@ -11,6 +11,7 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 
@@ -33,23 +34,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case commands.ConfigLoadedMsg:
-		if msg.Cfg == nil {
-			m.state = stateInitConfig
-			m.textInput.Placeholder = "..."
-			m.textInput.SetVirtualCursor(false)
-			m.textInput.Focus()
-		} else {
-			m.state = stateLoadPage
-			// TODO fire the command
-		}
+		m.state = stateLoadPage
+		m.cfg = &msg.Cfg
+		cmd = commands.LoadTodaysPage(m.cfg.UserDataPath)
+		cmds = append(cmds, cmd)
 
-	case commands.ConfigPathErrorMsg:
-		m.err = msg.Err
+	case commands.ConfigNotExistsMsg:
+		m.state = stateInitConfig
+		m.textInput.Placeholder = "..."
+		m.textInput.SetVirtualCursor(false)
+		m.textInput.Focus()
+
+	case commands.ConfigLoadFailedMsg:
 		m.state = stateError
+		m.err = msg.Err
+
+	case commands.PageLoadedMsg:
+		m.state = stateReady
+		m.page = msg.Page
 	}
 
 	// Update submodels
 	m.textInput, cmd = m.textInput.Update(msg)
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }

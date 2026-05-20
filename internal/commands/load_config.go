@@ -10,11 +10,12 @@ import (
 )
 
 type ConfigLoadedMsg struct {
-	Cfg *config.Config
-	Err error
+	Cfg config.Config
 }
 
-type ConfigPathErrorMsg struct {
+type ConfigNotExistsMsg struct{}
+
+type ConfigLoadFailedMsg struct {
 	Err error
 }
 
@@ -23,7 +24,7 @@ func LoadConfig() tea.Cmd {
 		path, err := config.Path()
 
 		if err != nil {
-			return ConfigPathErrorMsg{Err: err}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
 		data, err := os.ReadFile(path)
@@ -31,25 +32,19 @@ func LoadConfig() tea.Cmd {
 		if err != nil {
 			// If file not exist, trigger the first time setup
 			if errors.Is(err, os.ErrNotExist) {
-				return ConfigLoadedMsg{
-					Cfg: nil,
-					Err: err,
-				}
+				return ConfigNotExistsMsg{}
 			}
 
 			// Other IO error
-			return ConfigLoadedMsg{
-				Cfg: nil,
-				Err: err,
-			}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
 		cfg, err := config.FromJSON(data)
 
 		if err != nil {
-			return ConfigLoadedMsg{Cfg: nil, Err: err}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
-		return ConfigLoadedMsg{Cfg: &cfg, Err: nil}
+		return ConfigLoadedMsg{Cfg: cfg}
 	}
 }

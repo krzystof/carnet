@@ -2,7 +2,6 @@ package commands
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -15,7 +14,7 @@ func SetInitConfig(dataPath string) tea.Cmd {
 		cfgPath, err := config.Path()
 
 		if err != nil {
-			return ConfigPathErrorMsg{Err: err}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
 		if err := createCfgDirIfNotExists(cfgPath); err != nil {
@@ -25,7 +24,7 @@ func SetInitConfig(dataPath string) tea.Cmd {
 		appDir, err := config.Dir()
 
 		if err != nil {
-			return ConfigPathErrorMsg{Err: err}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
 		if dataPath == "" {
@@ -39,18 +38,16 @@ func SetInitConfig(dataPath string) tea.Cmd {
 		data, err := json.MarshalIndent(cfg, "", "  ")
 
 		if err != nil {
-			return ConfigLoadedMsg{Cfg: nil, Err: err}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
 		err = os.WriteFile(cfgPath, data, 0644)
 
-		fmt.Println("[DEBUG] > ", "four", err)
-
 		if err != nil {
-			return ConfigLoadedMsg{Cfg: nil, Err: err}
+			return ConfigLoadFailedMsg{Err: err}
 		}
 
-		return ConfigLoadedMsg{Cfg: &cfg, Err: nil}
+		return ConfigLoadedMsg{Cfg: cfg}
 	}
 }
 

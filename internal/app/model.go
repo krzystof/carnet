@@ -7,10 +7,11 @@ import (
 )
 
 type Model struct {
-	cfg       *config.Config
 	state     state
 	textInput textinput.Model
 	err       error
+	cfg       *config.Config
+	page      string // TODO that's going to be a Page
 }
 
 type state int

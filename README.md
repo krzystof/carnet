@@ -15,6 +15,8 @@ carnet/
 │   │   ├── view.go
 │   │   └── keymap.go
 │   │
+│   ├── core/						// business logic
+│   │
 │   ├── ui/							// LipGloss styles
 │   │   ├── styles.go
 │   │   ├── layout.go
