@@ -3,15 +3,32 @@ package app
 
 import (
 	"charm.land/bubbles/v2/textinput"
+	"github.com/krzystof/carnet/internal/components"
 	"github.com/krzystof/carnet/internal/config"
+	"github.com/krzystof/carnet/internal/core"
 )
 
 type Model struct {
-	state     state
+
+	// app core states
+	state state
+	err   error
+	cfg   *config.Config
+	page  *core.Page
+
+	// global ui stuff
+	width  int
+	height int
+
+	// reused component whenever we need user input
 	textInput textinput.Model
-	err       error
-	cfg       *config.Config
-	page      string // TODO that's going to be a Page
+
+	// ui components
+	header components.Header
+	// monthlyCalendar components.MonthlyCalendar
+	// timeline        components.Timeline
+	// tasks           components.Tasks
+	// eventDetail     components.EventDetail
 }
 
 type state int

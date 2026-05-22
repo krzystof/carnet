@@ -1,0 +1,5 @@
+package styles
+
+func RenderPane() {
+
+}

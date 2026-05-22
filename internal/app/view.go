@@ -3,6 +3,7 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/krzystof/carnet/internal/styles"
 )
 
 func (m Model) View() tea.View {
@@ -24,14 +25,65 @@ func (m Model) View() tea.View {
 	case stateLoadPage:
 		v.SetContent("...")
 
-	case stateReady:
-		v.SetContent(m.page)
-
 	case stateError:
-		v.SetContent("Fatal config path error:\n\n" + m.err.Error() + "\n\nPress q to quit")
+		v.SetContent("Error:\n\n" + m.err.Error() + "\n\nPress q to quit")
+
+	case stateReady:
+		//	Layout:
+		//
+		//	+---------+-----------------------------------------+
+		//	|	sidebar	|	main.header	 														|
+		//	|					+-----------------+-----------------------+
+		//	|					|	main.left				|	mainRight							|
+		//	|					|									|												|
+		//	|					|									|												|
+		//	|					|									+-----------------------+
+		//	|					|									|	main.bottomRight			|
+		//	|					|									|												|
+		//	+---------+-----------------+-----------------------+
+		//
+
+		// Layout dimensions
+		sidebarW := 50
+		mainW := m.width - 50
+		headerH := 20
+		mainH := m.height - headerH
+		mainColsW := mainW / 2
+		mainRightH := mainH * 2 / 3
+		mainBottomRightH := mainH - mainRightH
+
+		// Content
+		sidebarContent := "TODO: monthlyCalendar.View()"
+
+		mainRight := lipgloss.JoinVertical(
+			lipgloss.Left,
+			styles.Box("tasks.View", mainColsW, mainRightH),
+			styles.Box("event details", mainColsW, mainBottomRightH),
+		)
+
+		mainCols := lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			styles.Box("timeline", mainColsW, mainH),
+			mainRight,
+		)
+
+		main := lipgloss.JoinVertical(
+			lipgloss.Left,
+			styles.Box(m.header.View(), mainW, headerH),
+			mainCols,
+		)
+
+		ui := lipgloss.JoinHorizontal(
+			lipgloss.Top,
+			styles.Box(sidebarContent, sidebarW, m.height),
+			main,
+		)
+
+		v.SetContent(ui)
 	}
 
 	if m.err != nil {
+		// TODO: render an error overlay or toast or something
 		v.SetContent("/nError: " + m.err.Error() + "/n")
 	}
 
