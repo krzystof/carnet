@@ -2,6 +2,8 @@
 package app
 
 import (
+	"time"
+
 	"charm.land/bubbles/v2/textinput"
 	"github.com/krzystof/carnet/internal/components"
 	"github.com/krzystof/carnet/internal/config"
@@ -16,6 +18,7 @@ type Model struct {
 	err             error
 	cfg             *config.Config
 	page            *core.Page
+	selectedDate    time.Time
 
 	// global ui stuff
 	width  int
@@ -25,8 +28,8 @@ type Model struct {
 	textInput textinput.Model
 
 	// ui components
-	header components.Header
-	// monthlyCalendar components.MonthlyCalendar
+	header          components.Header
+	monthlyCalendar components.MonthlyCalendar
 	// timeline        components.Timeline
 	// tasks           components.Tasks
 	// eventDetail     components.EventDetail

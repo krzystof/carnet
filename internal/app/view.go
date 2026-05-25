@@ -54,7 +54,7 @@ func (m Model) View() tea.View {
 		mainBottomRightH := mainH - mainRightH
 
 		// Content
-		sidebarContent := "TODO: monthlyCalendar.View()"
+		sidebarContent := m.monthlyCalendar.View()
 
 		mainRight := lipgloss.JoinVertical(
 			lipgloss.Left,

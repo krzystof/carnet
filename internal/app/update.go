@@ -59,6 +59,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case commands.PageLoadedMsg:
 		m.state = stateReady
 		m.page = &msg.Page
+		m.selectedDate = msg.Page.Time
+		m.monthlyCalendar.SelectedDate = msg.Page.Time
 	}
 
 	// Update submodels
