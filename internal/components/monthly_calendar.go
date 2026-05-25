@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"charm.land/lipgloss/v2"
+	"github.com/krzystof/carnet/internal/styles"
 )
 
 type MonthlyCalendar struct {
@@ -24,14 +25,13 @@ func (c MonthlyCalendar) View() string {
 		endOfRange = endOfRange.Add(24 * time.Hour)
 	}
 
-	days := getCalendar(startOfRange, endOfRange)
+	days := getCalendar(startOfRange, endOfRange, c.SelectedDate)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
-		c.SelectedDate.Format("January 2006"),
+		lipgloss.NewStyle().Underline(true).Render(c.SelectedDate.Format("January 2006")),
 		"",
 		"Mon Tue Wed Thu Fri Sat Sun",
-		startOfRange.Format("2")+" -> "+endOfRange.Format("2"),
 		days,
 	)
 }
@@ -42,27 +42,42 @@ func getMonthStartAndEnd(t time.Time) (time.Time, time.Time) {
 	return startOfMonth, endOfMonth
 }
 
-func getCalendar(startOfRange, endOfRange time.Time) string {
+func getCalendar(startOfRange, endOfRange, selectedDate time.Time) string {
 	cursor := startOfRange
-	rows := ""
-
 	end := endOfRange.Add(24 * time.Hour)
+
+	rows := ""
+	now := time.Now()
+	sel := time.Date(selectedDate.Year(), selectedDate.Month(), selectedDate.Day(), 0, 0, 0, 0, selectedDate.Location())
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
 	for cursor.Before(end) {
 		d := fmt.Sprintf("% 3v", cursor.Day())
 
-		// TODO <p1> format:
-		// selected date
-		// today
-		// day not in the selected month
-
-		rows = rows + d
-
 		if cursor.Weekday() == time.Sunday {
-			rows = rows + "\n"
+			d = d + "\n"
 		} else {
-			rows = rows + " "
+			d = d + " "
 		}
 
+		s := lipgloss.NewStyle()
+
+		if cursor.Month() != sel.Month() {
+			s = s.Foreground(lipgloss.Color(styles.Theme.TextDimColor))
+		}
+
+		if cursor.Equal(today) {
+			s = s.
+				Foreground(lipgloss.Color(styles.Theme.TextBrightColor)).
+				Bold(true).
+				Underline(true)
+		}
+
+		if cursor.Equal(sel) {
+			s = s.Background(lipgloss.Color(styles.Theme.ItemActiveBackground))
+		}
+
+		rows = rows + s.Render(d)
 		cursor = cursor.Add(24 * time.Hour)
 	}
 
