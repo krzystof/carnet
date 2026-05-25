@@ -1,13 +1,26 @@
 package styles
 
-import "charm.land/lipgloss/v2"
+import (
+	"charm.land/lipgloss/v2"
+)
 
-func Box(content string, w, h int) string {
+func Box(content string, w, h int, active bool) string {
 	s := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		Width(w).
 		Height(h).
 		Padding(1)
+
+	if active {
+		s = s.Border(lipgloss.ThickBorder()).BorderForegroundBlend(
+			lipgloss.Color(Theme.BorderActiveColor1),
+			lipgloss.Color(Theme.BorderActiveColor2),
+		)
+	} else {
+		s = s.BorderForeground(
+			lipgloss.Color(Theme.BorderInactiveColor),
+		)
+	}
 
 	return s.Render(content)
 }

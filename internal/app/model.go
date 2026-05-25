@@ -11,10 +11,11 @@ import (
 type Model struct {
 
 	// app core states
-	state state
-	err   error
-	cfg   *config.Config
-	page  *core.Page
+	state           state
+	activeComponent components.ComponentName
+	err             error
+	cfg             *config.Config
+	page            *core.Page
 
 	// global ui stuff
 	width  int
@@ -45,7 +46,8 @@ func InitialModel() Model {
 	ti := textinput.New()
 
 	return Model{
-		state:     stateStarting,
-		textInput: ti,
+		state:           stateStarting,
+		activeComponent: components.TimelineComponent,
+		textInput:       ti,
 	}
 }

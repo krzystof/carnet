@@ -3,6 +3,7 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/krzystof/carnet/internal/components"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
@@ -57,25 +58,25 @@ func (m Model) View() tea.View {
 
 		mainRight := lipgloss.JoinVertical(
 			lipgloss.Left,
-			styles.Box("tasks.View", mainColsW, mainRightH),
-			styles.Box("event details", mainColsW, mainBottomRightH),
+			styles.Box("tasks.View", mainColsW, mainRightH, m.activeComponent == components.TaskListComponent),
+			styles.Box("event details", mainColsW, mainBottomRightH, m.activeComponent == components.EventDetailComponent),
 		)
 
 		mainCols := lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			styles.Box("timeline", mainColsW, mainH),
+			styles.Box("timeline", mainColsW, mainH, m.activeComponent == components.TimelineComponent),
 			mainRight,
 		)
 
 		main := lipgloss.JoinVertical(
 			lipgloss.Left,
-			styles.Box(m.header.View(), mainW, headerH),
+			styles.Box(m.header.View(), mainW, headerH, m.activeComponent == components.HeaderComponent),
 			mainCols,
 		)
 
 		ui := lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			styles.Box(sidebarContent, sidebarW, m.height),
+			styles.Box(sidebarContent, sidebarW, m.height, m.activeComponent == components.SidebarComponent),
 			main,
 		)
 

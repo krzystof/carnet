@@ -35,6 +35,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "ctrl+c":
 			return m, tea.Quit
+
+		case "ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l":
+			m.activeComponent = navigateToComponent(m.activeComponent, msg.String())
 		}
 
 	case commands.ConfigLoadedMsg:
