@@ -8,13 +8,14 @@ import (
 	"github.com/krzystof/carnet/internal/components"
 	"github.com/krzystof/carnet/internal/config"
 	"github.com/krzystof/carnet/internal/core"
+	"github.com/krzystof/carnet/internal/layout"
 )
 
 type Model struct {
 
 	// app core states
 	state           state
-	activeComponent components.ComponentName
+	activeComponent layout.ComponentName
 	err             error
 	cfg             *config.Config
 	page            *core.Page
@@ -30,9 +31,9 @@ type Model struct {
 	// ui components
 	header          components.Header
 	monthlyCalendar components.MonthlyCalendar
-	// timeline        components.Timeline
-	// tasks           components.Tasks
-	// eventDetail     components.EventDetail
+	// timeline        layout.Timeline
+	// tasks           layout.Tasks
+	// eventDetail     layout.EventDetail
 }
 
 type state int
@@ -50,7 +51,7 @@ func InitialModel() Model {
 
 	return Model{
 		state:           stateStarting,
-		activeComponent: components.TimelineComponent,
+		activeComponent: layout.TimelineComponent,
 		textInput:       ti,
 	}
 }

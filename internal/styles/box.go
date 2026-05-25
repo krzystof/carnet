@@ -4,7 +4,7 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-func Box(content string, w, h int, active bool) string {
+func Box(w, h int, active bool) lipgloss.Style {
 	s := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		Width(w).
@@ -22,5 +22,5 @@ func Box(content string, w, h int, active bool) string {
 		)
 	}
 
-	return s.Render(content)
+	return s
 }

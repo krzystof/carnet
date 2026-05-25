@@ -4,15 +4,50 @@ import (
 	"fmt"
 	"time"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/krzystof/carnet/internal/commands"
+	"github.com/krzystof/carnet/internal/layout"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
 type MonthlyCalendar struct {
 	SelectedDate time.Time
+	focused      bool
 }
 
-// update function: nav hjkl -> change the selected date!
+func (c MonthlyCalendar) Update(msg tea.Msg) (MonthlyCalendar, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case layout.FocusChangedMsg:
+		c.focused = msg.Comp == layout.SidebarComponent
+
+	case tea.KeyPressMsg:
+		if c.focused {
+			switch msg.String() {
+			case "h":
+				c.SelectedDate = c.SelectedDate.Add(-1 * 24 * time.Hour)
+				cmd = commands.SelectDate(c.SelectedDate)
+			case "j":
+				c.SelectedDate = c.SelectedDate.Add(7 * 24 * time.Hour)
+				cmd = commands.SelectDate(c.SelectedDate)
+			case "k":
+				c.SelectedDate = c.SelectedDate.Add(-7 * 24 * time.Hour)
+				cmd = commands.SelectDate(c.SelectedDate)
+			case "l":
+				c.SelectedDate = c.SelectedDate.Add(1 * 24 * time.Hour)
+				cmd = commands.SelectDate(c.SelectedDate)
+			case "t":
+				c.SelectedDate = todayDate()
+				cmd = commands.SelectDate(c.SelectedDate)
+			}
+
+		}
+	}
+
+	return c, cmd
+}
 
 func (c MonthlyCalendar) View() string {
 	startOfRange, endOfRange := getMonthStartAndEnd(c.SelectedDate)
@@ -47,18 +82,11 @@ func getCalendar(startOfRange, endOfRange, selectedDate time.Time) string {
 	end := endOfRange.Add(24 * time.Hour)
 
 	rows := ""
-	now := time.Now()
 	sel := time.Date(selectedDate.Year(), selectedDate.Month(), selectedDate.Day(), 0, 0, 0, 0, selectedDate.Location())
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	today := todayDate()
 
 	for cursor.Before(end) {
-		d := fmt.Sprintf("% 3v", cursor.Day())
-
-		if cursor.Weekday() == time.Sunday {
-			d = d + "\n"
-		} else {
-			d = d + " "
-		}
+		d := fmt.Sprintf("% 3v", cursor.Day()) + " "
 
 		s := lipgloss.NewStyle()
 
@@ -78,8 +106,18 @@ func getCalendar(startOfRange, endOfRange, selectedDate time.Time) string {
 		}
 
 		rows = rows + s.Render(d)
+
+		if cursor.Weekday() == time.Sunday {
+			rows = rows + " \n"
+		}
+
 		cursor = cursor.Add(24 * time.Hour)
 	}
 
 	return rows
+}
+
+func todayDate() time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 }

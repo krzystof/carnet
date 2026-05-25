@@ -3,7 +3,7 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/krzystof/carnet/internal/components"
+	"github.com/krzystof/carnet/internal/layout"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
@@ -58,25 +58,25 @@ func (m Model) View() tea.View {
 
 		mainRight := lipgloss.JoinVertical(
 			lipgloss.Left,
-			styles.Box("tasks.View", mainColsW, mainRightH, m.activeComponent == components.TaskListComponent),
-			styles.Box("event details", mainColsW, mainBottomRightH, m.activeComponent == components.EventDetailComponent),
+			styles.Box(mainColsW, mainRightH, m.activeComponent == layout.TaskListComponent).Render("tasks view"),
+			styles.Box(mainColsW, mainBottomRightH, m.activeComponent == layout.EventDetailComponent).Render("event details"),
 		)
 
 		mainCols := lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			styles.Box("timeline", mainColsW, mainH, m.activeComponent == components.TimelineComponent),
+			styles.Box(mainColsW, mainH, m.activeComponent == layout.TimelineComponent).Render("timeline"),
 			mainRight,
 		)
 
 		main := lipgloss.JoinVertical(
 			lipgloss.Left,
-			styles.Box(m.header.View(), mainW, headerH, m.activeComponent == components.HeaderComponent),
+			styles.Box(mainW, headerH, m.activeComponent == layout.HeaderComponent).Render(m.header.View()),
 			mainCols,
 		)
 
 		ui := lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			styles.Box(sidebarContent, sidebarW, m.height, m.activeComponent == components.SidebarComponent),
+			styles.Box(sidebarW, m.height, m.activeComponent == layout.SidebarComponent).Align(lipgloss.Center).Render(sidebarContent),
 			main,
 		)
 

@@ -3,6 +3,7 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/krzystof/carnet/internal/commands"
+	"github.com/krzystof/carnet/internal/layout"
 )
 
 func (m Model) Init() tea.Cmd {
@@ -37,8 +38,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l":
-			m.activeComponent = navigateToComponent(m.activeComponent, msg.String())
+			cmd = layout.ChangeFocus(m.activeComponent, msg.String())
+			cmds = append(cmds, cmd)
 		}
+
+	case layout.FocusChangedMsg:
+		m.activeComponent = msg.Comp
 
 	case commands.ConfigLoadedMsg:
 		m.state = stateLoadPage
@@ -60,14 +65,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = stateReady
 		m.page = &msg.Page
 		m.selectedDate = msg.Page.Time
-		m.monthlyCalendar.SelectedDate = msg.Page.Time
+
+	case commands.DateSelectedMsg:
+		m.selectedDate = msg.Date
+		// TODO load the current page!
+		// load the page
+		// 1. remove load_today_page
+		// 2. when app start, set DateSelectedMsg to today
+		// 3. listen to the event here and if it changed, fire the command to loadPage
+		// 4. react to page loaded
 	}
+
+	// This is prop passing
+	m.header.SelectedDate = m.selectedDate
+	m.monthlyCalendar.SelectedDate = m.selectedDate
 
 	// Update submodels
 	m.textInput, cmd = m.textInput.Update(msg)
 	cmds = append(cmds, cmd)
 
 	m.header, cmd = m.header.Update(msg)
+	cmds = append(cmds, cmd)
+
+	m.monthlyCalendar, cmd = m.monthlyCalendar.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
