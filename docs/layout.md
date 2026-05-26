@@ -1,0 +1,41 @@
+## Project layout
+
+```
+carnet/
+├── cmd/
+│   └── carnet/
+│       └── main.go
+│
+├── internal/
+│   ├── app/						// Bubble Tea app
+│   │   ├── model.go
+│   │   ├── update.go
+│   │   ├── view.go
+│   │   └── keymap.go
+│   │
+│   ├── components/			// complex components
+│   │
+│   ├── core/						// business logic
+│   │
+│   ├── layout/					// top level layout and navigation
+│   │
+│   ├── ui/							// LipGloss styles
+│   │   ├── styles.go
+│   │   ├── editor.go
+│   │   └── statusbar.go
+│   │
+│   ├── editor/					// Managing external editor
+│   │   ├── vim.go
+│   │   └── tempfiles.go
+│   │
+│   ├── validate/				// Validate content
+│   │   ├── json.go
+│   │   └── rules.go
+│   │
+│   └── storage/				// Read/write to filesystem
+│       ├── save.go
+│       └── load.go
+│
+├── go.mod
+└── README.md
+```

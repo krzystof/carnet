@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	tea "charm.land/bubbletea/v2"
 	"github.com/krzystof/carnet/internal/commands"
 	"github.com/krzystof/carnet/internal/layout"
@@ -48,7 +50,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case commands.ConfigLoadedMsg:
 		m.state = stateLoadPage
 		m.cfg = &msg.Cfg
-		cmd = commands.LoadTodaysPage(m.cfg.UserDataPath)
+		cmd = commands.SelectDate(time.Now())
 		cmds = append(cmds, cmd)
 
 	case commands.ConfigNotExistsMsg:
@@ -68,15 +70,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case commands.DateSelectedMsg:
 		m.selectedDate = msg.Date
-		// TODO load the current page!
-		// load the page
-		// 1. remove load_today_page
-		// 2. when app start, set DateSelectedMsg to today
-		// 3. listen to the event here and if it changed, fire the command to loadPage
-		// 4. react to page loaded
+
+		cmd = commands.LoadPage(m.cfg.UserDataPath, m.selectedDate)
+		cmds = append(cmds, cmd)
 	}
 
-	// This is prop passing
+	// Passing props to children
 	m.header.SelectedDate = m.selectedDate
 	m.monthlyCalendar.SelectedDate = m.selectedDate
 

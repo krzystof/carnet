@@ -58,7 +58,7 @@ func (m Model) View() tea.View {
 
 		mainRight := lipgloss.JoinVertical(
 			lipgloss.Left,
-			styles.Box(mainColsW, mainRightH, m.activeComponent == layout.TaskListComponent).Render("tasks view"),
+			styles.Box(mainColsW, mainRightH, m.activeComponent == layout.TaskListComponent).Render(m.tasks.View(m.page)),
 			styles.Box(mainColsW, mainBottomRightH, m.activeComponent == layout.EventDetailComponent).Render("event details"),
 		)
 

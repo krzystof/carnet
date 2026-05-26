@@ -32,7 +32,7 @@ type Model struct {
 	header          components.Header
 	monthlyCalendar components.MonthlyCalendar
 	// timeline        layout.Timeline
-	// tasks           layout.Tasks
+	tasks components.Tasks
 	// eventDetail     layout.EventDetail
 }
 

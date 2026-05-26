@@ -86,7 +86,14 @@ func getCalendar(startOfRange, endOfRange, selectedDate time.Time) string {
 	today := todayDate()
 
 	for cursor.Before(end) {
-		d := fmt.Sprintf("% 3v", cursor.Day()) + " "
+		var d string
+
+		// Here we could use different styles for today, if we wanted to
+		if cursor.Equal(today) {
+			d = fmt.Sprintf(" %2v ", cursor.Day())
+		} else {
+			d = fmt.Sprintf(" %2v ", cursor.Day())
+		}
 
 		s := lipgloss.NewStyle()
 
