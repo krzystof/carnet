@@ -47,7 +47,7 @@ func (m Model) View() tea.View {
 		// Layout dimensions
 		sidebarW := 50
 		mainW := m.width - 50
-		headerH := 10
+		headerH := 5
 		mainH := m.height - headerH
 		mainColsW := mainW / 2
 		mainRightH := mainH * 2 / 3
@@ -64,7 +64,7 @@ func (m Model) View() tea.View {
 
 		mainCols := lipgloss.JoinHorizontal(
 			lipgloss.Top,
-			styles.Box(mainColsW, mainH, m.activeComponent == layout.TimelineComponent).Render("timeline"),
+			styles.Box(mainColsW, mainH, m.activeComponent == layout.TimelineComponent).Render(m.timeline.View(m.width)),
 			mainRight,
 		)
 

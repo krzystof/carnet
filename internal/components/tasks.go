@@ -1,6 +1,7 @@
 package components
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/krzystof/carnet/internal/core"
@@ -15,7 +16,7 @@ func (t Tasks) View(p *core.Page) string {
 	parts := []string{}
 
 	for _, v := range p.Events {
-		e := "Start=" + string(v.StartTime) + " | Duration=" + string(v.DurationMin) + " | Cat=" + v.Category + " | Title=" + v.Title
+		e := "Start=" + strconv.Itoa(v.StartTime) + " | Duration=" + strconv.Itoa(v.DurationMin) + " | Cat=" + v.Category + " | Title=" + v.Title
 
 		parts = append(parts, e)
 	}

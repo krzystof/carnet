@@ -31,8 +31,8 @@ type Model struct {
 	// ui components
 	header          components.Header
 	monthlyCalendar components.MonthlyCalendar
-	// timeline        layout.Timeline
-	tasks components.Tasks
+	timeline        components.Timeline
+	tasks           components.Tasks
 	// eventDetail     layout.EventDetail
 }
 
