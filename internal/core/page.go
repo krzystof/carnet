@@ -27,7 +27,7 @@ func EmptyPage(t time.Time, date string) Page {
 	}
 }
 
-type pageSection = int
+// type pageSection = int
 
 const (
 	sectionStart = iota
@@ -51,8 +51,19 @@ func ParseStrToPage(t time.Time, date string, content []byte) Page {
 			continue
 		}
 
-		if bytes.Equal(line, []byte("## Timeline")) {
+		re := regexp.MustCompile(`^## (.*$)`)
+		match := re.FindSubmatch(line)
+
+		word := []byte{}
+		if len(match) == 2 {
+			word = match[1]
+		}
+
+		if bytes.Equal(word, []byte("Timeline")) {
 			section = sectionTimeline
+			continue
+		} else if bytes.Equal(word, []byte("Tasks")) {
+			section = sectionTasks
 			continue
 		}
 
@@ -87,7 +98,7 @@ type Event struct {
 // A timeline entry looks like this for example:
 // 08:00 - 09:00 #project prepare presentation
 func parseTimelineEntry(line []byte) (*Event, error) {
-	re := regexp.MustCompile(`(?P<start>\w+)\s+-\s+(?P<end>\w+)\s+(?P<cat>#\w+)\s(?P<title>.*$)`)
+	re := regexp.MustCompile(`(?P<start>\w+:\w+) - (?P<end>\w+:\w+)\W+(?P<cat>#\w+)\W(?P<title>.*$)`)
 
 	match := re.FindSubmatch(line)
 
@@ -101,16 +112,24 @@ func parseTimelineEntry(line []byte) (*Event, error) {
 		}
 	}
 
-	var err error
-	start := 1
+	startStr, ok := result["start"]
+	if !ok {
+		return nil, fmt.Errorf("missing start field")
+	}
 
-	if v, ok := result["start"]; ok {
-		hhmm := strings.Replace(v, ":", "", 1)
-		start, err = strconv.Atoi((hhmm))
+	start, err := parseTimeToMinutesSinceMidnight(startStr)
+	if err != nil {
+		return nil, err
+	}
 
-		if err != nil {
-			return nil, fmt.Errorf("could not parse start into number, got: %s", (v))
-		}
+	endStr, ok := result["end"]
+	if !ok {
+		return nil, fmt.Errorf("missing end field")
+	}
+
+	end, err := parseTimeToMinutesSinceMidnight(endStr)
+	if err != nil {
+		return nil, err
 	}
 
 	cat := ""
@@ -125,8 +144,31 @@ func parseTimelineEntry(line []byte) (*Event, error) {
 
 	return &Event{
 		StartTime:   start,
-		DurationMin: 2,
+		DurationMin: end - start,
 		Category:    cat,
 		Title:       title,
 	}, nil
+}
+
+func parseTimeToMinutesSinceMidnight(hhmm string) (int, error) {
+	hh, mm, ok := strings.Cut(hhmm, ":")
+
+	if !ok {
+		return 0, fmt.Errorf("could not parse time into number, got: %s", hhmm)
+	}
+
+	h, err := strconv.Atoi((hh))
+
+	if err != nil {
+		return 0, fmt.Errorf("could not parse start hour into number, got: %s", hhmm)
+	}
+
+	m, err := strconv.Atoi((mm))
+
+	if err != nil {
+		return 0, fmt.Errorf("could not parse start minutes into number, got: %s", hhmm)
+	}
+
+	return h*60 + m, nil
+
 }

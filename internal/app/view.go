@@ -47,7 +47,7 @@ func (m Model) View() tea.View {
 		// Layout dimensions
 		sidebarW := 50
 		mainW := m.width - 50
-		headerH := 20
+		headerH := 10
 		mainH := m.height - headerH
 		mainColsW := mainW / 2
 		mainRightH := mainH * 2 / 3

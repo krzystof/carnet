@@ -1,10 +1,24 @@
 package components
 
-import "github.com/krzystof/carnet/internal/core"
+import (
+	"strings"
+
+	"github.com/krzystof/carnet/internal/core"
+)
 
 type Tasks struct {
 }
 
 func (t Tasks) View(p *core.Page) string {
-	return "## Tasks\n-------\n" + p.RawContent
+	// return "## Tasks\n-------\n" + p.RawContent
+
+	parts := []string{}
+
+	for _, v := range p.Events {
+		e := "Start=" + string(v.StartTime) + " | Duration=" + string(v.DurationMin) + " | Cat=" + v.Category + " | Title=" + v.Title
+
+		parts = append(parts, e)
+	}
+
+	return strings.Join(parts, "\n")
 }
