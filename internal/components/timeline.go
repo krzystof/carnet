@@ -2,14 +2,22 @@ package components
 
 import (
 	"strconv"
+	"strings"
 
 	"charm.land/lipgloss/v2"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
 type Timeline struct {
-	// cursorStart int
-	// cursorDuration int
+	cursorStart    int
+	cursorDuration int
+}
+
+func NewTimeline() Timeline {
+	return Timeline{
+		cursorStart:    8 * 60,
+		cursorDuration: 30,
+	}
 }
 
 // j+k move up and down the cursor
@@ -25,7 +33,11 @@ func (t Timeline) View(width, height int) string {
 
 	slots := visibleSlots(startFrom, height-8) // 2 borders, 2 padding, 2 labels, 2 borders
 
-	visibleRows := lipgloss.JoinHorizontal(lipgloss.Top, hourLabels(slots), " clock ", hoursBlocks(slots))
+	visibleRows := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		hourLabels(slots),
+		" clock ",
+		hoursBlocks(t, slots, width-18)) // w - space for hours labels, clock, and extra stuff on right
 
 	s := lipgloss.NewStyle().
 		Width(width-4). // (got to remove those borders and padding)
@@ -59,29 +71,23 @@ func hourLabels(slots []int) string {
 	)
 }
 
-// Textures:
-// ░  light shade
-// ▒  medium shade
-// ▓  dark shade
-// █  full block
-func hoursBlocks(slots []int) string {
-	s := lipgloss.NewStyle()
+func hoursBlocks(t Timeline, slots []int, width int) string {
+	activeSlotStyle := lipgloss.NewStyle().Background(styles.Theme.ItemActiveBackgroundDim)
 
 	blocks := []string{}
 
 	for _, minutes := range slots {
-		b := ""
+		b := strings.Repeat(" ", width)
 
-		if minutes%60 == 0 {
-			b = "---"
+		// If below cursor:
+		if minutes >= t.cursorStart && minutes < (t.cursorStart+t.cursorDuration) {
+			b = activeSlotStyle.Render(b)
 		}
 
 		blocks = append(blocks, b)
 	}
 
-	col := lipgloss.JoinVertical(lipgloss.Left, blocks...)
-
-	return s.Render(col)
+	return lipgloss.JoinVertical(lipgloss.Left, blocks...)
 }
 
 // Get a slice of minutes that will be displayed in our component.

@@ -53,5 +53,6 @@ func InitialModel() Model {
 		state:           stateStarting,
 		activeComponent: layout.TimelineComponent,
 		textInput:       ti,
+		timeline:        components.NewTimeline(),
 	}
 }
