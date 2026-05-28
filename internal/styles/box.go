@@ -13,12 +13,12 @@ func Box(w, h int, active bool) lipgloss.Style {
 
 	if active {
 		s = s.Border(lipgloss.ThickBorder()).BorderForegroundBlend(
-			lipgloss.Color(Theme.BorderActiveColor1),
-			lipgloss.Color(Theme.BorderActiveColor2),
+			Theme.BorderActiveColor1,
+			Theme.BorderActiveColor2,
 		)
 	} else {
 		s = s.BorderForeground(
-			lipgloss.Color(Theme.BorderInactiveColor),
+			Theme.BorderInactiveColor,
 		)
 	}
 

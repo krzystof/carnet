@@ -1,21 +1,27 @@
 package styles
 
+import (
+	"image/color"
+
+	"charm.land/lipgloss/v2"
+)
+
 // Base background color: #24273a
 
 type ThemeDef struct {
-	BorderInactiveColor  string
-	BorderActiveColor1   string
-	BorderActiveColor2   string
-	TextDimColor         string
-	TextBrightColor      string
-	ItemActiveBackground string
+	BorderInactiveColor  color.Color
+	BorderActiveColor1   color.Color
+	BorderActiveColor2   color.Color
+	TextDimColor         color.Color
+	TextBrightColor      color.Color
+	ItemActiveBackground color.Color
 }
 
 var Theme = ThemeDef{
-	BorderInactiveColor:  "#414351",
-	BorderActiveColor1:   "#c64c1f",
-	BorderActiveColor2:   "#e8bd14",
-	TextDimColor:         "#898889",
-	TextBrightColor:      "#f7f7f7",
-	ItemActiveBackground: "#c64c1f",
+	BorderInactiveColor:  lipgloss.Color("#414351"),
+	BorderActiveColor1:   lipgloss.Color("#c64c1f"),
+	BorderActiveColor2:   lipgloss.Color("#e8bd14"),
+	TextDimColor:         lipgloss.Color("#898889"),
+	TextBrightColor:      lipgloss.Color("#f7f7f7"),
+	ItemActiveBackground: lipgloss.Color("#c64c1f"),
 }

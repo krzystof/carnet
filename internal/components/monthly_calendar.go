@@ -98,18 +98,18 @@ func getCalendar(startOfRange, endOfRange, selectedDate time.Time) string {
 		s := lipgloss.NewStyle()
 
 		if cursor.Month() != sel.Month() {
-			s = s.Foreground(lipgloss.Color(styles.Theme.TextDimColor))
+			s = s.Foreground(styles.Theme.TextDimColor)
 		}
 
 		if cursor.Equal(today) {
 			s = s.
-				Foreground(lipgloss.Color(styles.Theme.TextBrightColor)).
+				Foreground(styles.Theme.TextBrightColor).
 				Bold(true).
 				Underline(true)
 		}
 
 		if cursor.Equal(sel) {
-			s = s.Background(lipgloss.Color(styles.Theme.ItemActiveBackground))
+			s = s.Background(styles.Theme.ItemActiveBackground)
 		}
 
 		rows = rows + s.Render(d)
