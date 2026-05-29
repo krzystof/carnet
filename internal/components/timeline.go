@@ -4,9 +4,12 @@ import (
 	"strconv"
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/krzystof/carnet/internal/styles"
 )
+
+const defaultDuration = 30
 
 type Timeline struct {
 	cursorStart    int
@@ -14,14 +17,37 @@ type Timeline struct {
 }
 
 func NewTimeline() Timeline {
+	// cursor should be as close as possible as time.Now()
 	return Timeline{
 		cursorStart:    8 * 60,
-		cursorDuration: 30,
+		cursorDuration: defaultDuration,
 	}
 }
 
+func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "j":
+			// go down
+			t.cursorStart = t.cursorStart + t.cursorDuration
+			t.cursorDuration = defaultDuration
+
+			// TODO <p0> page up and down?
+		case "k":
+			// go up
+			t.cursorStart = t.cursorStart - defaultDuration
+			t.cursorDuration = defaultDuration
+		}
+	}
+
+	return t, cmd
+}
+
 // j+k move up and down the cursor
-// select an event if overlaps
+// TODO p3 select an event if overlaps
 // otherwise, highlight the relevant squares
 
 func (t Timeline) View(width, height int) string {

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/krzystof/carnet/internal/commands"
 )
 
 type Header struct {
@@ -11,10 +12,10 @@ type Header struct {
 }
 
 func (h Header) Update(msg tea.Msg) (Header, tea.Cmd) {
-	// switch msg := msg.(type) {
-	// case commands.PageLoadedMsg:
-	// 	h.dateTime = msg.Page.Time
-	// }
+	switch msg := msg.(type) {
+	case commands.DateSelectedMsg:
+		h.SelectedDate = msg.Date
+	}
 
 	return h, nil
 }

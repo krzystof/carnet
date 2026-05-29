@@ -7,42 +7,37 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/krzystof/carnet/internal/commands"
-	"github.com/krzystof/carnet/internal/layout"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
 type MonthlyCalendar struct {
 	SelectedDate time.Time
-	focused      bool
 }
 
 func (c MonthlyCalendar) Update(msg tea.Msg) (MonthlyCalendar, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-	case layout.FocusChangedMsg:
-		c.focused = msg.Comp == layout.SidebarComponent
+	case commands.DateSelectedMsg:
+		c.SelectedDate = msg.Date
 
 	case tea.KeyPressMsg:
-		if c.focused {
-			switch msg.String() {
-			case "h":
-				c.SelectedDate = c.SelectedDate.Add(-1 * 24 * time.Hour)
-				cmd = commands.SelectDate(c.SelectedDate)
-			case "j":
-				c.SelectedDate = c.SelectedDate.Add(7 * 24 * time.Hour)
-				cmd = commands.SelectDate(c.SelectedDate)
-			case "k":
-				c.SelectedDate = c.SelectedDate.Add(-7 * 24 * time.Hour)
-				cmd = commands.SelectDate(c.SelectedDate)
-			case "l":
-				c.SelectedDate = c.SelectedDate.Add(1 * 24 * time.Hour)
-				cmd = commands.SelectDate(c.SelectedDate)
-			case "t":
-				c.SelectedDate = todayDate()
-				cmd = commands.SelectDate(c.SelectedDate)
-			}
-
+		switch msg.String() {
+		case "h":
+			c.SelectedDate = c.SelectedDate.Add(-1 * 24 * time.Hour)
+			cmd = commands.SelectDate(c.SelectedDate)
+		case "j":
+			c.SelectedDate = c.SelectedDate.Add(7 * 24 * time.Hour)
+			cmd = commands.SelectDate(c.SelectedDate)
+		case "k":
+			c.SelectedDate = c.SelectedDate.Add(-7 * 24 * time.Hour)
+			cmd = commands.SelectDate(c.SelectedDate)
+		case "l":
+			c.SelectedDate = c.SelectedDate.Add(1 * 24 * time.Hour)
+			cmd = commands.SelectDate(c.SelectedDate)
+		case "t":
+			c.SelectedDate = todayDate()
+			cmd = commands.SelectDate(c.SelectedDate)
 		}
 	}
 

@@ -17,32 +17,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
-
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-
-	case tea.KeyPressMsg:
-
-		switch msg.String() {
-		case "enter":
-			if m.state == stateInitConfig {
-				return m, commands.SetInitConfig(m.textInput.Value())
-			}
-
-		case "q":
-			// Dont quit when typing "q" on a text input
-			if m.state != stateInitConfig {
-				return m, tea.Quit
-			}
-
-		case "ctrl+c":
-			return m, tea.Quit
-
-		case "ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l":
-			cmd = layout.ChangeFocus(m.activeComponent, msg.String())
-			cmds = append(cmds, cmd)
-		}
 
 	case layout.FocusChangedMsg:
 		m.activeComponent = msg.Comp
@@ -73,20 +50,56 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		cmd = commands.LoadPage(m.cfg.UserDataPath, m.selectedDate)
 		cmds = append(cmds, cmd)
+
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "enter":
+			if m.state == stateInitConfig {
+				return m, commands.SetInitConfig(m.textInput.Value())
+			}
+
+		case "q":
+			// Dont quit when typing "q" on a text input
+			if m.state != stateInitConfig {
+				return m, tea.Quit
+			}
+
+		case "ctrl+c":
+			return m, tea.Quit
+
+		case "ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l":
+			cmd = layout.ChangeFocus(m.activeComponent, msg.String())
+			cmds = append(cmds, cmd)
+		}
+
 	}
 
-	// Passing props to children
-	m.header.SelectedDate = m.selectedDate
-	m.monthlyCalendar.SelectedDate = m.selectedDate
+	// Child updates
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch m.activeComponent {
+		case layout.HeaderComponent:
+			m.header, cmd = m.header.Update(msg)
+			cmds = append(cmds, cmd)
+		case layout.SidebarComponent:
+			m.monthlyCalendar, cmd = m.monthlyCalendar.Update(msg)
+			cmds = append(cmds, cmd)
+		case layout.TimelineComponent:
+			m.timeline, cmd = m.timeline.Update(msg)
+			cmds = append(cmds, cmd)
+		}
+
+	default:
+		m.header, cmd = m.header.Update(msg)
+		cmds = append(cmds, cmd)
+		m.monthlyCalendar, cmd = m.monthlyCalendar.Update(msg)
+		cmds = append(cmds, cmd)
+		m.timeline, cmd = m.timeline.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
 	// Update submodels
 	m.textInput, cmd = m.textInput.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.header, cmd = m.header.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.monthlyCalendar, cmd = m.monthlyCalendar.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
