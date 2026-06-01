@@ -6,12 +6,18 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/krzystof/carnet/internal/layout"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
 const defaultDuration = 30
 
 type Timeline struct {
+	Width  int
+	Height int
+	// In minutes since midnight
+	displayFrom int
+	// In minutes since midnight
 	cursorStart    int
 	cursorDuration int
 }
@@ -19,6 +25,7 @@ type Timeline struct {
 func NewTimeline() Timeline {
 	// cursor should be as close as possible as time.Now()
 	return Timeline{
+		displayFrom:    -1,
 		cursorStart:    8 * 60,
 		cursorDuration: defaultDuration,
 	}
@@ -35,12 +42,33 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 			t.cursorStart = t.cursorStart + t.cursorDuration
 			t.cursorDuration = defaultDuration
 
-			// TODO <p0> page up and down?
+			if t.cursorStart+t.cursorDuration >= 24*60 {
+				t.cursorStart = 24*60 - defaultDuration
+			}
+
+			cursorEnd := t.cursorStart + t.cursorDuration
+			if cursorEnd >= t.maxVisibleSlot() {
+				t.displayFrom += t.cursorDuration
+			}
+
 		case "k":
 			// go up
-			t.cursorStart = t.cursorStart - defaultDuration
+			t.cursorStart = max(t.cursorStart-defaultDuration, 0)
 			t.cursorDuration = defaultDuration
+
+			// If you go up and the new start is not display from, update
+			if t.cursorStart < t.displayFrom {
+				t.displayFrom = t.cursorStart
+			}
+
 		}
+
+	case layout.LayoutSizesChangedMsg:
+		t.Width = msg.LayoutSizes.MainColumnsWidth
+		t.Height = msg.LayoutSizes.MainHeight
+
+		visibleRowsCount := t.Height - 8
+		t.displayFrom = calcStartFrom(t.displayFrom, visibleRowsCount)
 	}
 
 	return t, cmd
@@ -50,23 +78,17 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 // TODO p3 select an event if overlaps
 // otherwise, highlight the relevant squares
 
-func (t Timeline) View(width, height int) string {
-	// use lipgloss layers, maybe?
-
-	// 8am by default, will need to check this OR first event
-	// TODO this should be init, after its internal state, also do this only if height is not enough
-	startFrom := 8 * 60
-
-	slots := visibleSlots(startFrom, height-8) // 2 borders, 2 padding, 2 labels, 2 borders
+func (t Timeline) View() string {
+	slots := visibleSlots(t.displayFrom, t.Height-8) // 2 borders, 2 padding, 2 labels, 2 borders
 
 	visibleRows := lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		hourLabels(slots),
 		" clock ",
-		hoursBlocks(t, slots, width-18)) // w - space for hours labels, clock, and extra stuff on right
+		hoursBlocks(t, slots, t.Width-18)) // w - space for hours labels, clock, and extra stuff on right
 
 	s := lipgloss.NewStyle().
-		Width(width-4). // (got to remove those borders and padding)
+		Width(t.Width-4). // (got to remove those borders and padding)
 		BorderForeground(styles.Theme.BorderInactiveColor).
 		Border(lipgloss.NormalBorder(), true, false)
 
@@ -74,7 +96,7 @@ func (t Timeline) View(width, height int) string {
 		lipgloss.Left,
 		"Press k to move up",
 		s.Render(visibleRows),
-		"Press j to move down",
+		("Press j to move down" + " | max visible slot: " + strconv.Itoa(t.maxVisibleSlot())),
 	)
 }
 
@@ -121,6 +143,7 @@ func hoursBlocks(t Timeline, slots []int, width int) string {
 func visibleSlots(startFrom, height int) []int {
 	slots := []int{}
 
+	// 1 row = 15 minutes
 	for i := startFrom; i <= 24*60; i += 15 {
 		slots = append(slots, i)
 
@@ -130,4 +153,29 @@ func visibleSlots(startFrom, height int) []int {
 	}
 
 	return slots
+}
+
+// Returns a value in minutes
+func calcStartFrom(storedDisplayFrom, rowCount int) int {
+	if storedDisplayFrom != -1 {
+		return storedDisplayFrom
+	}
+
+	hourCount := rowCount / 4
+
+	// We have enough real estate to display everything
+	if hourCount >= 24 {
+		return 0
+	}
+
+	// else calculate the most centered window we can by leaving same space before / after
+	hoursOffset := ((24 - hourCount) / 2)
+
+	// Convert to blocks
+	return 60 * hoursOffset
+}
+
+func (t Timeline) maxVisibleSlot() int {
+	visibleRowsCount := t.Height - 8
+	return t.displayFrom + visibleRowsCount*15
 }

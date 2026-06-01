@@ -1,4 +1,3 @@
-// package layout groups all the section of the app, and the navigation between them
 package layout
 
 import (
