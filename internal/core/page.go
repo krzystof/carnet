@@ -170,5 +170,20 @@ func parseTimeToMinutesSinceMidnight(hhmm string) (int, error) {
 	}
 
 	return h*60 + m, nil
+}
 
+// Return a map of the page's Events, keyed by the timeslot
+// An event might appear several time, if it covers multiple timeslots.
+func (p Page) GetEventPerSlots(slotDuration int) map[int]*Event {
+	var m = make(map[int]*Event)
+
+	for _, e := range p.Events {
+		endTime := e.StartTime + e.DurationMin
+
+		for c := e.StartTime; c < endTime; c += slotDuration {
+			m[c] = e
+		}
+	}
+
+	return m
 }

@@ -1,16 +1,19 @@
 package components
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/krzystof/carnet/internal/core"
 	"github.com/krzystof/carnet/internal/layout"
 	"github.com/krzystof/carnet/internal/styles"
 )
 
-const defaultDuration = 30
+const defaultCursorDuration = 30
+const slotDuration = 15
 
 type Timeline struct {
 	Width  int
@@ -27,7 +30,7 @@ func NewTimeline() Timeline {
 	return Timeline{
 		displayFrom:    -1,
 		cursorStart:    8 * 60,
-		cursorDuration: defaultDuration,
+		cursorDuration: defaultCursorDuration,
 	}
 }
 
@@ -40,10 +43,10 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 		case "j":
 			// go down
 			t.cursorStart = t.cursorStart + t.cursorDuration
-			t.cursorDuration = defaultDuration
+			t.cursorDuration = defaultCursorDuration
 
 			if t.cursorStart+t.cursorDuration >= 24*60 {
-				t.cursorStart = 24*60 - defaultDuration
+				t.cursorStart = 24*60 - defaultCursorDuration
 			}
 
 			cursorEnd := t.cursorStart + t.cursorDuration
@@ -51,16 +54,19 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 				t.displayFrom += t.cursorDuration
 			}
 
+			// TODO 2 - what if an event?
+
 		case "k":
 			// go up
-			t.cursorStart = max(t.cursorStart-defaultDuration, 0)
-			t.cursorDuration = defaultDuration
+			t.cursorStart = max(t.cursorStart-defaultCursorDuration, 0)
+			t.cursorDuration = defaultCursorDuration
 
 			// If you go up and the new start is not display from, update
 			if t.cursorStart < t.displayFrom {
 				t.displayFrom = t.cursorStart
 			}
 
+			// TODO 2 - what if an event?
 		}
 
 	case layout.LayoutSizesChangedMsg:
@@ -74,18 +80,14 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 	return t, cmd
 }
 
-// j+k move up and down the cursor
-// TODO p3 select an event if overlaps
-// otherwise, highlight the relevant squares
-
-func (t Timeline) View() string {
+func (t Timeline) View(page *core.Page) string {
 	slots := visibleSlots(t.displayFrom, t.Height-8) // 2 borders, 2 padding, 2 labels, 2 borders
 
 	visibleRows := lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		hourLabels(slots),
 		" clock ",
-		hoursBlocks(t, slots, t.Width-18)) // w - space for hours labels, clock, and extra stuff on right
+		eventsSlots(t, slots, t.Width-18, page)) // w - space for hours labels, clock, and extra stuff on right
 
 	s := lipgloss.NewStyle().
 		Width(t.Width-4). // (got to remove those borders and padding)
@@ -119,13 +121,35 @@ func hourLabels(slots []int) string {
 	)
 }
 
-func hoursBlocks(t Timeline, slots []int, width int) string {
+func eventsSlots(t Timeline, slots []int, width int, page *core.Page) string {
 	activeSlotStyle := lipgloss.NewStyle().Background(styles.Theme.ItemActiveBackgroundDim)
 
 	blocks := []string{}
 
+	events := page.GetEventPerSlots(slotDuration)
+
 	for _, minutes := range slots {
 		b := strings.Repeat(" ", width)
+
+		// how?
+		e, ok := events[minutes]
+
+		if ok {
+			if e.StartTime == minutes {
+				b = fmt.Sprintf("%s", e.Title)
+				b += strings.Repeat(" ", width-len(b))
+			}
+			// TODO 0 render the left border
+			// special colors?
+		}
+
+		// TODO 1
+		// if cursor is first of an event, render the event times, category and title
+		// sepcial styles too
+		// if still within an event, just border left
+
+		// TODO 3
+		// if event selected
 
 		// If below cursor:
 		if minutes >= t.cursorStart && minutes < (t.cursorStart+t.cursorDuration) {
@@ -143,8 +167,7 @@ func hoursBlocks(t Timeline, slots []int, width int) string {
 func visibleSlots(startFrom, height int) []int {
 	slots := []int{}
 
-	// 1 row = 15 minutes
-	for i := startFrom; i <= 24*60; i += 15 {
+	for i := startFrom; i <= 24*60; i += slotDuration {
 		slots = append(slots, i)
 
 		if len(slots) == height {
@@ -177,5 +200,5 @@ func calcStartFrom(storedDisplayFrom, rowCount int) int {
 
 func (t Timeline) maxVisibleSlot() int {
 	visibleRowsCount := t.Height - 8
-	return t.displayFrom + visibleRowsCount*15
+	return t.displayFrom + visibleRowsCount*slotDuration
 }

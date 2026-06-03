@@ -68,7 +68,7 @@ func (m Model) View() tea.View {
 			lipgloss.Top,
 			styles.
 				Box(m.timeline.Width, m.timeline.Height, m.activeComponent == layout.TimelineComponent).
-				Render(m.timeline.View()),
+				Render(m.timeline.View(m.page)),
 			mainRight,
 		)
 

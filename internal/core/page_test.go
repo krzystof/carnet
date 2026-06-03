@@ -61,3 +61,31 @@ func TestParseStrToPage_single_event(t *testing.T) {
 		t.Errorf("Expected Title %s, got %s", wantStr, gotStr)
 	}
 }
+
+func TestGetEvents(t *testing.T) {
+	page := ParseStrToPage(time.Now(), "", []byte(content))
+
+	slotDuration := 15
+	eventMap := page.GetEventPerSlots(slotDuration)
+
+	index := 6 * 60
+	first := eventMap[index]
+
+	if first.Title != "make coffee" {
+		t.Errorf("Expected event with title 'make coffee' at index %d", index)
+	}
+
+	index = 6*60 + 30
+	same := eventMap[index]
+
+	if same.Title != "make coffee" {
+		t.Errorf("Expected event with title 'make coffee' at index %d", index)
+	}
+
+	index = 13 * 60
+	_, ok := eventMap[index]
+
+	if ok {
+		t.Errorf("Expected no events at time %d", index)
+	}
+}
