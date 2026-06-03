@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -26,10 +27,9 @@ type Timeline struct {
 }
 
 func NewTimeline() Timeline {
-	// cursor should be as close as possible as time.Now()
 	return Timeline{
 		displayFrom:    -1,
-		cursorStart:    8 * 60,
+		cursorStart:    time.Now().Hour() * 60,
 		cursorDuration: defaultCursorDuration,
 	}
 }
@@ -122,25 +122,33 @@ func hourLabels(slots []int) string {
 }
 
 func eventsSlots(t Timeline, slots []int, width int, page *core.Page) string {
-	activeSlotStyle := lipgloss.NewStyle().Background(styles.Theme.ItemActiveBackgroundDim)
-
 	blocks := []string{}
-
 	events := page.GetEventPerSlots(slotDuration)
 
 	for _, minutes := range slots {
+		s := lipgloss.NewStyle()
 		b := strings.Repeat(" ", width)
 
-		// how?
 		e, ok := events[minutes]
 
+		fgColor := styles.Theme.BorderActiveColor1
+		bgColor := styles.Theme.ItemActiveBackgroundDim
+
 		if ok {
+			fgColor = styles.GetCategoryColor(e.Category, "dark")
+			bgColor = styles.GetCategoryColor(e.Category, "pastel")
+
 			if e.StartTime == minutes {
-				b = fmt.Sprintf("%s", e.Title)
+				b = fmt.Sprintf("%s %s", e.Category, e.Title)
 				b += strings.Repeat(" ", width-len(b))
 			}
-			// TODO 0 render the left border
-			// special colors?
+
+			s = s.BorderLeft(true).
+				BorderStyle(lipgloss.NormalBorder()).
+				BorderForeground(fgColor).
+				BorderBackground(bgColor).
+				Background(bgColor).
+				PaddingLeft(1)
 		}
 
 		// TODO 1
@@ -153,10 +161,12 @@ func eventsSlots(t Timeline, slots []int, width int, page *core.Page) string {
 
 		// If below cursor:
 		if minutes >= t.cursorStart && minutes < (t.cursorStart+t.cursorDuration) {
-			b = activeSlotStyle.Render(b)
+			s = s.
+				Background(bgColor).
+				BorderBackground(bgColor)
 		}
 
-		blocks = append(blocks, b)
+		blocks = append(blocks, s.Render(b))
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, blocks...)
