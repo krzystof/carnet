@@ -80,6 +80,10 @@ func (s Schedule) View(p *core.Page) string {
 	boxes := []string{}
 	lastEndTime := 0
 
+	eventWidth := s.Width - 8
+
+	isToday := p.IsToday()
+
 	for _, e := range p.Events {
 		endTime := e.StartTime + e.DurationMin
 
@@ -87,16 +91,21 @@ func (s Schedule) View(p *core.Page) string {
 			boxes = append(boxes, "\n")
 		}
 
-		b := renderEventV2(s.Width, e)
+		b := renderEventV2(e, eventWidth, isToday)
 		boxes = append(boxes, b)
 
 		lastEndTime = endTime
 	}
 
-	return lipgloss.JoinVertical(
+	boxesCol := lipgloss.JoinVertical(
 		lipgloss.Left,
 		boxes...,
 	)
+
+	return lipgloss.NewStyle().
+		Width(s.Width - 4). // remove border and padding
+		Align(lipgloss.Center).
+		Render(boxesCol)
 }
 
 func formatClock(minutes int) string {
@@ -105,7 +114,7 @@ func formatClock(minutes int) string {
 
 func renderEvent(width int, e *core.Event) string {
 	s := lipgloss.NewStyle().
-		Width(width-8).
+		Width(width).
 		BorderForeground(styles.Theme.BorderInactiveColor).
 		Border(lipgloss.NormalBorder()).
 		Padding(0, 2)
@@ -120,12 +129,22 @@ func renderEvent(width int, e *core.Event) string {
 	return s.Render(b)
 }
 
-func renderEventV2(width int, e *core.Event) string {
+func renderEventV2(e *core.Event, width int, isToday bool) string {
 	slotsCount := max(e.DurationMin/15, 2)
 	fgColor := styles.GetCategoryColor(e.Category, "dark")
 
+	w := width
+	if isToday {
+		w -= 8
+	}
+
+	// clock := ""
+	// if isToday {
+	// 	clock = renderClock()
+	// }
+
 	s := lipgloss.NewStyle().
-		Width(width - 8).
+		Width(w).
 		BorderForeground(fgColor).
 		Border(lipgloss.ThickBorder())
 

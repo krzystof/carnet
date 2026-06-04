@@ -187,3 +187,8 @@ func (p Page) GetEventPerSlots(slotDuration int) map[int]*Event {
 
 	return m
 }
+
+func (p Page) IsToday() bool {
+	now := time.Now()
+	return p.Time.Year() == now.Year() && p.Time.Month() == now.Month() && p.Time.Day() == now.Day()
+}
