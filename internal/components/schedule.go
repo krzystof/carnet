@@ -87,7 +87,7 @@ func (s Schedule) View(p *core.Page) string {
 	if p.IsToday() {
 		clock = renderClock(t)
 	}
-	clockLength := len([]rune(clock))
+	clockLength := lipgloss.Width(clock)
 
 	for _, e := range p.Events {
 		endTime := e.StartTime + e.DurationMin
@@ -121,7 +121,7 @@ func formatClock(minutes int) string {
 	return fmt.Sprintf("%2d:%02d", minutes/60, minutes%60)
 }
 
-const debugClock = true
+const debugClock = false
 
 func renderEventV2(e *core.Event, width int) string {
 	slotsCount := max(e.DurationMin/15, 2)
@@ -148,6 +148,7 @@ func renderEventV2(e *core.Event, width int) string {
 		}
 	} else {
 		lines += strings.Repeat("\n"+coloredBlock, slotsCount-1)
+		lines += fmt.Sprintf(" %s", formatClock(e.StartTime+e.DurationMin))
 	}
 
 	return s.Render(lines)
