@@ -66,9 +66,15 @@ func (m Model) View() tea.View {
 
 		mainCols := lipgloss.JoinHorizontal(
 			lipgloss.Top,
+
 			styles.
-				Box(m.timeline.Width, m.timeline.Height, m.activeComponent == layout.TimelineComponent).
-				Render(m.timeline.View(m.page)),
+				Box(m.schedule.Width, m.schedule.Height, m.activeComponent == layout.ScheduleComponent).
+				Render(m.schedule.View(m.page)),
+
+			// styles.
+			// 	Box(m.timeline.Width, m.timeline.Height, m.activeComponent == layout.TimelineComponent).
+			// 	Render(m.timeline.View(m.page)),
+
 			mainRight,
 		)
 

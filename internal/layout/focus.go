@@ -10,6 +10,7 @@ const (
 	SidebarComponent = iota
 	HeaderComponent
 	TimelineComponent
+	ScheduleComponent
 	TaskListComponent
 	EventDetailComponent
 )
@@ -33,16 +34,16 @@ type NavParams struct {
 }
 
 var nav = map[NavParams]ComponentName{
-	{comp: SidebarComponent, dir: right}:    TimelineComponent,
-	{comp: TimelineComponent, dir: left}:    SidebarComponent,
-	{comp: TimelineComponent, dir: up}:      HeaderComponent,
-	{comp: TimelineComponent, dir: right}:   TaskListComponent,
+	{comp: SidebarComponent, dir: right}:    ScheduleComponent,
+	{comp: ScheduleComponent, dir: left}:    SidebarComponent,
+	{comp: ScheduleComponent, dir: up}:      HeaderComponent,
+	{comp: ScheduleComponent, dir: right}:   TaskListComponent,
 	{comp: HeaderComponent, dir: left}:      SidebarComponent,
-	{comp: HeaderComponent, dir: down}:      TimelineComponent,
-	{comp: TaskListComponent, dir: left}:    TimelineComponent,
+	{comp: HeaderComponent, dir: down}:      ScheduleComponent,
+	{comp: TaskListComponent, dir: left}:    ScheduleComponent,
 	{comp: TaskListComponent, dir: up}:      HeaderComponent,
 	{comp: TaskListComponent, dir: down}:    EventDetailComponent,
-	{comp: EventDetailComponent, dir: left}: TimelineComponent,
+	{comp: EventDetailComponent, dir: left}: ScheduleComponent,
 	{comp: EventDetailComponent, dir: up}:   TaskListComponent,
 }
 var keyToDir = map[string]direction{

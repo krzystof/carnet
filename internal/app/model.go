@@ -32,6 +32,7 @@ type Model struct {
 	header          components.Header
 	monthlyCalendar components.MonthlyCalendar
 	timeline        components.Timeline
+	schedule        components.Schedule
 	tasks           components.Tasks
 	// eventDetail     layout.EventDetail
 }
@@ -47,12 +48,11 @@ const (
 )
 
 func InitialModel() Model {
-	ti := textinput.New()
-
 	return Model{
 		state:           stateStarting,
-		activeComponent: layout.TimelineComponent,
-		textInput:       ti,
+		activeComponent: layout.ScheduleComponent,
+		textInput:       textinput.New(),
 		timeline:        components.NewTimeline(),
+		schedule:        components.NewSchedule(),
 	}
 }

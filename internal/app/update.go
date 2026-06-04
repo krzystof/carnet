@@ -98,6 +98,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 		m.timeline, cmd = m.timeline.Update(msg)
 		cmds = append(cmds, cmd)
+		m.schedule, cmd = m.schedule.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	// Update submodels

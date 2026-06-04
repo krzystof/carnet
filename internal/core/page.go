@@ -98,7 +98,7 @@ type Event struct {
 // A timeline entry looks like this for example:
 // 08:00 - 09:00 #project prepare presentation
 func parseTimelineEntry(line []byte) (*Event, error) {
-	re := regexp.MustCompile(`(?P<start>\w+:\w+) - (?P<end>\w+:\w+)\W+(?P<cat>#\w+)\W(?P<title>.*$)`)
+	re := regexp.MustCompile(`(?P<start>\w+:\w+) - (?P<end>\w+:\w+)\W+(?P<cat>#\w+)?\W(?P<title>.*$)`)
 
 	match := re.FindSubmatch(line)
 
