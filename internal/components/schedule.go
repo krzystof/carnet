@@ -78,11 +78,19 @@ func (s Schedule) View(p *core.Page) string {
 	}
 
 	boxes := []string{}
+	lastEndTime := 0
 
 	for _, e := range p.Events {
-		// b := renderEvent(s.Width, e)
+		endTime := e.StartTime + e.DurationMin
+
+		if lastEndTime != 0 && e.StartTime != lastEndTime {
+			boxes = append(boxes, "\n")
+		}
+
 		b := renderEventV2(s.Width, e)
 		boxes = append(boxes, b)
+
+		lastEndTime = endTime
 	}
 
 	return lipgloss.JoinVertical(
@@ -113,28 +121,27 @@ func renderEvent(width int, e *core.Event) string {
 }
 
 func renderEventV2(width int, e *core.Event) string {
-	// height := (e.DurationMin / 15) + 2 // add the borders
-
-	slotsCount := min(e.DurationMin/15, 2)
+	slotsCount := max(e.DurationMin/15, 2)
 	fgColor := styles.GetCategoryColor(e.Category, "dark")
 
 	s := lipgloss.NewStyle().
-		Width(width-8).
-		// Height(height).
+		Width(width - 8).
 		BorderForeground(fgColor).
-		Border(lipgloss.ThickBorder()).
-		Padding(0, 2)
+		Border(lipgloss.ThickBorder())
 
-	lines := fmt.Sprintf("%s    %s %s",
+	coloredBlock := lipgloss.NewStyle().Foreground(fgColor).Render("▒")
+
+	lines := fmt.Sprintf("%s %s    %s %s",
+		coloredBlock,
 		formatClock(e.StartTime),
 		formatCategoryTag(e.Category),
 		(e.Title),
 	)
 
 	// add empty lines
-	lines += strings.Repeat("\n", slotsCount-2)
+	lines += strings.Repeat("\n"+coloredBlock, slotsCount-1)
 
-	lines += "\n" + formatClock(e.StartTime+e.DurationMin)
+	lines += " " + formatClock(e.StartTime+e.DurationMin)
 
 	return s.Render(lines)
 }
