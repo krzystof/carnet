@@ -127,11 +127,10 @@ func eventsSlots(t Timeline, slots []int, width int, page *core.Page) string {
 
 		e, ok := events[minutes]
 
-		fgColor := styles.Theme.BorderActiveColor1
 		bgColor := styles.Theme.ItemActiveBackgroundDim
 
 		if ok {
-			fgColor = styles.GetCategoryColor(e.Category, "dark")
+			fgColor := styles.GetCategoryColor(e.Category, "dark")
 			bgColor = styles.GetCategoryColor(e.Category, "pastel")
 
 			if e.StartTime == minutes {

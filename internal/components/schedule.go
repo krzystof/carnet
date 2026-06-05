@@ -15,8 +15,7 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-// Schedule is a list of events for a given day
-
+// Schedule is a list of events for a given day, displayed in a column
 type Schedule struct {
 	Width         int
 	Height        int
@@ -30,12 +29,13 @@ func NewSchedule() Schedule {
 
 func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 	var cmd tea.Cmd
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "j":
-			// go down
+			// move down
 			if s.selectedEvent == nil && len(s.page.Events) > 0 {
 				s.selectedEvent = s.page.Events[0]
 				break
@@ -49,6 +49,7 @@ func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 				s.selectedEvent = s.page.Events[idx+1]
 			}
 
+		// move up
 		case "k":
 			if s.selectedEvent == nil && len(s.page.Events) > 0 {
 				s.selectedEvent = s.page.Events[0]
@@ -62,7 +63,28 @@ func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 			if (idx - 1) >= 0 {
 				s.selectedEvent = s.page.Events[idx-1]
 			}
+
+		// append event
+		case "a":
+			// emit message to add an event after the selected event
+			// when appending an event, we delay the one after if they overlap
+
+			// if empty, current time -> closest 15s
+			now := time.Now()
+			nowMinutes := now.Hour()*60 + now.Minute()
+			startTime := ((nowMinutes / 15) + 1) * 15
+
+			// if selectedEvent, after the event
+			cmd = commands.OpenNewEventForm(startTime)
+			cmds = append(cmds, cmd)
 		}
+
+		// other shortcuts to implement:
+		// ctrl+a -> add 15 minutes to duration
+		// ctrl+x -> remove 15 minutes from duration
+		// J -> add 15 minutes to start
+		// K -> remove 15 minutes from start
+		// For each change, emit an event for the top-level to save changes to disk
 
 	case commands.PageLoadedMsg:
 		s.page = &msg.Page
@@ -72,7 +94,7 @@ func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 		s.Height = msg.LayoutSizes.MainHeight
 	}
 
-	return s, cmd
+	return s, tea.Batch(cmds...)
 }
 
 func (s Schedule) View() string {
@@ -153,7 +175,7 @@ func renderEventV2(e *core.Event, width int, isSelected bool) string {
 		blockStyle = blockStyle.Foreground(fgColor)
 	}
 
-	coloredBlock := blockStyle.Render("▒")
+	coloredBlock := blockStyle.Render("█")
 
 	lines := fmt.Sprintf("%s %s    %s %s",
 		coloredBlock,

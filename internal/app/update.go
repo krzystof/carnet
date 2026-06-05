@@ -53,6 +53,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = commands.LoadPage(m.cfg.UserDataPath, m.selectedDate)
 		cmds = append(cmds, cmd)
 
+	case commands.OpenNewEventFormMsg:
+		// hey!
+		// TODO p1
+		// 0. create change event form
+		// 1. open the form (recalculate layout)
+		// 2. focus the form
+
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "enter":
