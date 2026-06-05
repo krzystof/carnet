@@ -88,13 +88,6 @@ func ParseStrToPage(t time.Time, date string, content []byte) Page {
 	}
 }
 
-type Event struct {
-	StartTime   int
-	DurationMin int
-	Category    string
-	Title       string
-}
-
 // A timeline entry looks like this for example:
 // 08:00 - 09:00 #project prepare presentation
 func parseTimelineEntry(line []byte) (*Event, error) {
@@ -172,7 +165,7 @@ func parseTimeToMinutesSinceMidnight(hhmm string) (int, error) {
 	return h*60 + m, nil
 }
 
-// Return a map of the page's Events, keyed by the timeslot
+// GetEventPerSlots returns a map of the page's Events, keyed by the timeslot
 // An event might appear several time, if it covers multiple timeslots.
 func (p Page) GetEventPerSlots(slotDuration int) map[int]*Event {
 	var m = make(map[int]*Event)

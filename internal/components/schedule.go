@@ -5,9 +5,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/krzystof/carnet/internal/commands"
 	"github.com/krzystof/carnet/internal/core"
 	"github.com/krzystof/carnet/internal/layout"
 	"github.com/krzystof/carnet/internal/styles"
+	"github.com/krzystof/carnet/internal/utils"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -16,8 +18,10 @@ import (
 // Schedule is a list of events for a given day
 
 type Schedule struct {
-	Width  int
-	Height int
+	Width         int
+	Height        int
+	page          *core.Page
+	selectedEvent *core.Event
 }
 
 func NewSchedule() Schedule {
@@ -28,36 +32,30 @@ func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
-	// case tea.KeyPressMsg:
-	// 	switch msg.String() {
-	// 	case "j":
-	// 		// go down
-	// 		t.cursorStart = t.cursorStart + t.cursorDuration
-	// 		t.cursorDuration = defaultCursorDuration
-	//
-	// 		if t.cursorStart+t.cursorDuration >= 24*60 {
-	// 			t.cursorStart = 24*60 - defaultCursorDuration
-	// 		}
-	//
-	// 		cursorEnd := t.cursorStart + t.cursorDuration
-	// 		if cursorEnd >= t.maxVisibleSlot() {
-	// 			t.displayFrom += t.cursorDuration
-	// 		}
-	//
-	// 		// TODO 2 - what if an event?
-	//
-	// 	case "k":
-	// 		// go up
-	// 		t.cursorStart = max(t.cursorStart-defaultCursorDuration, 0)
-	// 		t.cursorDuration = defaultCursorDuration
-	//
-	// 		// If you go up and the new start is not display from, update
-	// 		if t.cursorStart < t.displayFrom {
-	// 			t.displayFrom = t.cursorStart
-	// 		}
-	//
-	// 		// TODO 2 - what if an event?
-	// 	}
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "j":
+			// go down
+			if s.selectedEvent == nil && len(s.page.Events) > 0 {
+				s.selectedEvent = s.page.Events[0]
+				break
+			}
+
+			idx := utils.IndexOf(s.page.Events, func(e *core.Event) bool {
+				return e.Equal(s.selectedEvent)
+			})
+
+			if idx >= 0 && (idx+1) < len(s.page.Events) {
+				s.selectedEvent = s.page.Events[idx+1]
+			}
+
+		case "k":
+			// TODO p0 -> go up!
+			// go up
+		}
+
+	case commands.PageLoadedMsg:
+		s.page = &msg.Page
 
 	case layout.LayoutSizesChangedMsg:
 		s.Width = msg.LayoutSizes.MainColumnsWidth
@@ -67,8 +65,8 @@ func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 	return s, cmd
 }
 
-func (s Schedule) View(p *core.Page) string {
-	if len(p.Events) == 0 {
+func (s Schedule) View() string {
+	if len(s.page.Events) == 0 {
 		st := lipgloss.NewStyle().
 			Width(s.Width).
 			Height(s.Height - 4).
@@ -84,19 +82,24 @@ func (s Schedule) View(p *core.Page) string {
 
 	t := time.Now()
 	clock := ""
-	if p.IsToday() {
+	if s.page.IsToday() {
 		clock = renderClock(t)
 	}
 	clockLength := lipgloss.Width(clock)
 
-	for _, e := range p.Events {
+	for _, e := range s.page.Events {
 		endTime := e.StartTime + e.DurationMin
 
 		if lastEndTime != 0 && e.StartTime != lastEndTime {
 			boxes = append(boxes, " ")
 		}
 
-		b := renderEventV2(e, eventWidth-clockLength)
+		isSelected := false
+		if s.selectedEvent != nil {
+			isSelected = e.Equal(s.selectedEvent)
+		}
+
+		b := renderEventV2(e, eventWidth-clockLength, isSelected)
 		boxes = append(boxes, b)
 
 		lastEndTime = endTime
@@ -109,7 +112,7 @@ func (s Schedule) View(p *core.Page) string {
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Top,
-		lipgloss.PlaceVertical(calcOffset(p, t), lipgloss.Bottom, clock),
+		lipgloss.PlaceVertical(calcOffset(s.page, t), lipgloss.Bottom, clock),
 		lipgloss.NewStyle().
 			Width(s.Width-4-clockLength). // remove border and padding
 			Align(lipgloss.Center).
@@ -123,7 +126,7 @@ func formatClock(minutes int) string {
 
 const debugClock = false
 
-func renderEventV2(e *core.Event, width int) string {
+func renderEventV2(e *core.Event, width int, isSelected bool) string {
 	slotsCount := max(e.DurationMin/15, 2)
 	fgColor := styles.GetCategoryColor(e.Category, "dark")
 
@@ -134,11 +137,18 @@ func renderEventV2(e *core.Event, width int) string {
 
 	coloredBlock := lipgloss.NewStyle().Foreground(fgColor).Render("▒")
 
-	lines := fmt.Sprintf("%s %s    %s %s",
+	// TODO p1 style it
+	sel := ""
+	if isSelected {
+		sel = "<---"
+	}
+
+	lines := fmt.Sprintf("%s %s    %s %s %s",
 		coloredBlock,
 		formatClock(e.StartTime),
 		formatCategoryTag(e.Category),
 		(e.Title),
+		sel,
 	)
 
 	// add empty lines

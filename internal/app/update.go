@@ -89,6 +89,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case layout.TimelineComponent:
 			m.timeline, cmd = m.timeline.Update(msg)
 			cmds = append(cmds, cmd)
+		case layout.ScheduleComponent:
+			m.schedule, cmd = m.schedule.Update(msg)
+			cmds = append(cmds, cmd)
 		}
 
 	default:

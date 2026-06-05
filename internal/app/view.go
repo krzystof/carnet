@@ -69,7 +69,7 @@ func (m Model) View() tea.View {
 
 			styles.
 				Box(m.schedule.Width, m.schedule.Height, m.activeComponent == layout.ScheduleComponent).
-				Render(m.schedule.View(m.page)),
+				Render(m.schedule.View()),
 
 			// styles.
 			// 	Box(m.timeline.Width, m.timeline.Height, m.activeComponent == layout.TimelineComponent).

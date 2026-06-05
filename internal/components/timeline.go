@@ -54,8 +54,6 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 				t.displayFrom += t.cursorDuration
 			}
 
-			// TODO 2 - what if an event?
-
 		case "k":
 			// go up
 			t.cursorStart = max(t.cursorStart-defaultCursorDuration, 0)
@@ -65,8 +63,6 @@ func (t Timeline) Update(msg tea.Msg) (Timeline, tea.Cmd) {
 			if t.cursorStart < t.displayFrom {
 				t.displayFrom = t.cursorStart
 			}
-
-			// TODO 2 - what if an event?
 		}
 
 	case layout.LayoutSizesChangedMsg:
@@ -151,12 +147,10 @@ func eventsSlots(t Timeline, slots []int, width int, page *core.Page) string {
 				PaddingLeft(1)
 		}
 
-		// TODO 1
 		// if cursor is first of an event, render the event times, category and title
 		// sepcial styles too
 		// if still within an event, just border left
 
-		// TODO 3
 		// if event selected
 
 		// If below cursor:
