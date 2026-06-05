@@ -50,8 +50,18 @@ func (s Schedule) Update(msg tea.Msg) (Schedule, tea.Cmd) {
 			}
 
 		case "k":
-			// TODO p0 -> go up!
-			// go up
+			if s.selectedEvent == nil && len(s.page.Events) > 0 {
+				s.selectedEvent = s.page.Events[0]
+				break
+			}
+
+			idx := utils.IndexOf(s.page.Events, func(e *core.Event) bool {
+				return e.Equal(s.selectedEvent)
+			})
+
+			if (idx - 1) >= 0 {
+				s.selectedEvent = s.page.Events[idx-1]
+			}
 		}
 
 	case commands.PageLoadedMsg:
@@ -128,27 +138,28 @@ const debugClock = false
 
 func renderEventV2(e *core.Event, width int, isSelected bool) string {
 	slotsCount := max(e.DurationMin/15, 2)
-	fgColor := styles.GetCategoryColor(e.Category, "dark")
+	fgColor := styles.GetCategoryColor(e.Category, "bright")
+	bgColor := styles.GetCategoryColor(e.Category, "dim")
 
 	s := lipgloss.NewStyle().
 		Width(width).
-		BorderForeground(fgColor).
+		BorderForeground(bgColor).
 		Border(lipgloss.ThickBorder())
 
-	coloredBlock := lipgloss.NewStyle().Foreground(fgColor).Render("▒")
+	blockStyle := lipgloss.NewStyle().Foreground(bgColor)
 
-	// TODO p1 style it
-	sel := ""
 	if isSelected {
-		sel = "<---"
+		s = s.BorderForeground(fgColor)
+		blockStyle = blockStyle.Foreground(fgColor)
 	}
 
-	lines := fmt.Sprintf("%s %s    %s %s %s",
+	coloredBlock := blockStyle.Render("▒")
+
+	lines := fmt.Sprintf("%s %s    %s %s",
 		coloredBlock,
 		formatClock(e.StartTime),
 		formatCategoryTag(e.Category),
 		(e.Title),
-		sel,
 	)
 
 	// add empty lines
@@ -169,7 +180,7 @@ func formatCategoryTag(c string) string {
 		return c
 	}
 
-	bgColor := styles.GetCategoryColor(c, "dark")
+	bgColor := styles.GetCategoryColor(c, "dim")
 
 	s := lipgloss.NewStyle().Background(bgColor).Padding(0, 1)
 
